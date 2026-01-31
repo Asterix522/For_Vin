@@ -304,21 +304,21 @@
         </header>
 
         <div class="result-section">
-                <h2>Selected Name</h2>
-                <div class="selected-name" id="selectedName">---</div>
-                <button class="btn btn-pick" id="pickBtn">
-                    <i class="fas fa-dice"></i> Pick Random Name
+            <h2>Selected Name</h2>
+            <div class="selected-name" id="selectedName">---</div>
+            <button class="btn btn-pick" id="pickBtn">
+                <i class="fas fa-dice"></i> Pick Random Name
+            </button>
+            
+            <div class="controls">
+                <button class="btn btn-add" id="addExampleBtn">
+                    <i class="fas fa-users"></i> Add More Example Names
                 </button>
-                
-                <div class="controls">
-                    <button class="btn btn-add" id="addExampleBtn">
-                        <i class="fas fa-users"></i> Add Example Names
-                    </button>
-                    <button class="btn btn-clear" id="resetBtn">
-                        <i class="fas fa-redo"></i> Reset Selection
-                    </button>
-                </div>
+                <button class="btn btn-clear" id="resetBtn">
+                    <i class="fas fa-redo"></i> Reset Selection
+                </button>
             </div>
+        </div>
         
         <div class="main-content">
             <div class="input-section">
@@ -331,20 +331,16 @@
                 </div>
                 <p>You can also add multiple names at once by separating them with commas</p>
             </div>
-
-             
             
             <div class="names-section">
                 <h2>Names List <span id="nameCount">(0 names)</span></h2>
                 <div class="names-list" id="namesList">
-                    <div class="empty-message">No names added yet. Add some names above!</div>
+                    <div class="empty-message">Loading example names...</div>
                 </div>
                 <button class="btn btn-clear" id="clearBtn">
                     <i class="fas fa-trash-alt"></i> Clear All Names
                 </button>
             </div>
-            
-           
             
             <div class="history-section">
                 <h2>Pick History <span id="historyCount">(0 picks)</span></h2>
@@ -378,10 +374,51 @@
             let names = [];
             let pickHistory = [];
             
+            // Define example names
+            const exampleNames = [
+                "Ashe", "Bastion", "Cassidy", "Echo",
+                "Freja", "Genji", "Hanzo", "Junkrat",
+                "Mei", "Pharah", "Reaper", "Sojourn", 
+                "Soldier 76", "Sombra", "Symmetra", "Torbjorn",
+                "Tracer", "Vendetta", "Venture", "Widowmaker"
+            ];
+            
+            // Function to initialize with example names
+            function initializeWithExamples() {
+                // Clear any existing names
+                names = [];
+                
+                // Add all example names
+                exampleNames.forEach(name => {
+                    names.push(name);
+                });
+                
+                updateNamesList();
+                saveNames();
+                
+                // Show a brief confirmation
+                selectedName.textContent = "Ready to pick!";
+                selectedName.classList.add('highlight');
+                setTimeout(() => {
+                    selectedName.classList.remove('highlight');
+                    selectedName.textContent = "---";
+                }, 1500);
+            }
+            
             // Load names and history from localStorage if available
             if (localStorage.getItem('savedNames')) {
-                names = JSON.parse(localStorage.getItem('savedNames'));
-                updateNamesList();
+                const savedNames = JSON.parse(localStorage.getItem('savedNames'));
+                // Only load saved names if there are any
+                if (savedNames.length > 0) {
+                    names = savedNames;
+                    updateNamesList();
+                } else {
+                    // If saved but empty, load examples
+                    initializeWithExamples();
+                }
+            } else {
+                // No saved names, load examples
+                initializeWithExamples();
             }
             
             if (localStorage.getItem('pickHistory')) {
@@ -409,30 +446,31 @@
             // Pick random name instantly
             pickBtn.addEventListener('click', pickRandomName);
             
-            // Add example names
+            // Add more example names
             addExampleBtn.addEventListener('click', function() {
-                const exampleNames = [
-                    "Ashe", "Bastion", "Cassidy", "Echo",
-                    "Freja", "Genji", "Hanzo", "Junkrat",
-                    "Mei", "Pharah", "Reaper", "Sojourn", 
-                    "Soldier 76", "Sombra", "Symmetra", "Torbjorn",
-                    "Tracer", "Vendetta", "Venture", "Widowmaker"
-                ];
-                
-                // Add only names that aren't already in the list
+                // Add example names that aren't already in the list
+                let addedCount = 0;
                 exampleNames.forEach(name => {
                     if (!names.includes(name)) {
                         names.push(name);
+                        addedCount++;
                     }
                 });
                 
                 updateNamesList();
                 saveNames();
                 
-                // Show a confirmation
-                selectedName.textContent = "Example names added!";
+                // Show confirmation
+                if (addedCount > 0) {
+                    selectedName.textContent = `Added ${addedCount} names!`;
+                } else {
+                    selectedName.textContent = "All example names already added!";
+                }
                 selectedName.classList.add('highlight');
-                setTimeout(() => selectedName.classList.remove('highlight'), 800);
+                setTimeout(() => {
+                    selectedName.classList.remove('highlight');
+                    selectedName.textContent = "---";
+                }, 1500);
             });
             
             // Reset selection
@@ -594,11 +632,6 @@
             // Function to save history to localStorage
             function saveHistory() {
                 localStorage.setItem('pickHistory', JSON.stringify(pickHistory));
-            }
-            
-            // Initialize with some example names if empty
-            if (names.length === 0) {
-                addExampleBtn.click();
             }
         });
     </script>
