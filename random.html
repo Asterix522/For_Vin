@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random Name Picker</title>
+    <title>Instant Random Name Picker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -228,13 +228,36 @@
             padding: 20px;
         }
         
-        .spinning {
-            animation: spin 0.1s linear infinite;
+        .history-section {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 15px;
         }
         
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .history-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            min-height: 50px;
+        }
+        
+        .history-item {
+            background-color: #e9ecef;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+            color: #495057;
+            border-left: 4px solid #2575fc;
+        }
+        
+        .history-empty {
+            color: #999;
+            font-style: italic;
+            width: 100%;
+            text-align: center;
+            padding: 15px;
         }
         
         footer {
@@ -276,33 +299,11 @@
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-random"></i> Random Name Picker</h1>
-            <p class="subtitle">Add names and let chance decide who's next!</p>
+            <h1><i class="fas fa-random"></i> Instant Name Picker</h1>
+            <p class="subtitle">Add names and instantly pick a random one!</p>
         </header>
-        
-        <div class="main-content">
-            <div class="input-section">
-                <h2>Add Names</h2>
-                <div class="input-area">
-                    <input type="text" id="nameInput" placeholder="Enter a name (e.g., John Doe)">
-                    <button class="btn btn-add" id="addBtn">
-                        <i class="fas fa-plus"></i> Add Name
-                    </button>
-                </div>
-                <p>You can also add multiple names at once by separating them with commas</p>
-            </div>
-            
-            <div class="names-section">
-                <h2>Names List <span id="nameCount">(0 names)</span></h2>
-                <div class="names-list" id="namesList">
-                    <div class="empty-message">No names added yet. Add some names above!</div>
-                </div>
-                <button class="btn btn-clear" id="clearBtn">
-                    <i class="fas fa-trash-alt"></i> Clear All Names
-                </button>
-            </div>
-            
-            <div class="result-section">
+
+        <div class="result-section">
                 <h2>Selected Name</h2>
                 <div class="selected-name" id="selectedName">---</div>
                 <button class="btn btn-pick" id="pickBtn">
@@ -318,10 +319,43 @@
                     </button>
                 </div>
             </div>
+        
+        <div class="main-content">
+            <div class="input-section">
+                <h2>Add Names</h2>
+                <div class="input-area">
+                    <input type="text" id="nameInput" placeholder="Enter a name (e.g., John Doe)">
+                    <button class="btn btn-add" id="addBtn">
+                        <i class="fas fa-plus"></i> Add Name
+                    </button>
+                </div>
+                <p>You can also add multiple names at once by separating them with commas</p>
+            </div>
+
+             
+            
+            <div class="names-section">
+                <h2>Names List <span id="nameCount">(0 names)</span></h2>
+                <div class="names-list" id="namesList">
+                    <div class="empty-message">No names added yet. Add some names above!</div>
+                </div>
+                <button class="btn btn-clear" id="clearBtn">
+                    <i class="fas fa-trash-alt"></i> Clear All Names
+                </button>
+            </div>
+            
+           
+            
+            <div class="history-section">
+                <h2>Pick History <span id="historyCount">(0 picks)</span></h2>
+                <div class="history-list" id="historyList">
+                    <div class="history-empty">No picks yet. Click "Pick Random Name" to start!</div>
+                </div>
+            </div>
         </div>
         
         <footer>
-            <p>Click "Pick Random Name" to randomly select a name from the list</p>
+            <p>Click "Pick Random Name" to instantly select a random name from the list</p>
         </footer>
     </div>
 
@@ -337,14 +371,22 @@
             const namesList = document.getElementById('namesList');
             const selectedName = document.getElementById('selectedName');
             const nameCount = document.getElementById('nameCount');
+            const historyList = document.getElementById('historyList');
+            const historyCount = document.getElementById('historyCount');
             
-            // Initialize names array
+            // Initialize names array and history
             let names = [];
+            let pickHistory = [];
             
-            // Load names from localStorage if available
+            // Load names and history from localStorage if available
             if (localStorage.getItem('savedNames')) {
                 names = JSON.parse(localStorage.getItem('savedNames'));
                 updateNamesList();
+            }
+            
+            if (localStorage.getItem('pickHistory')) {
+                pickHistory = JSON.parse(localStorage.getItem('pickHistory'));
+                updateHistoryList();
             }
             
             // Add name from input
@@ -364,15 +406,17 @@
                 }
             });
             
-            // Pick random name
+            // Pick random name instantly
             pickBtn.addEventListener('click', pickRandomName);
             
             // Add example names
             addExampleBtn.addEventListener('click', function() {
                 const exampleNames = [
-                    "Alex Johnson", "Maria Garcia", "David Smith", "Sarah Williams",
-                    "James Brown", "Emily Davis", "Michael Miller", "Jessica Wilson",
-                    "Daniel Taylor", "Olivia Martinez", "Robert Anderson", "Sophia Thomas"
+                    "Ashe", "Bastion", "Cassidy", "Echo",
+                    "Freja", "Genji", "Hanzo", "Junkrat",
+                    "Mei", "Pharah", "Reaper", "Sojourn", 
+                    "Soldier 76", "Sombra", "Symmetra", "Torbjorn",
+                    "Tracer", "Vendetta", "Venture", "Widowmaker"
                 ];
                 
                 // Add only names that aren't already in the list
@@ -469,7 +513,31 @@
                 });
             }
             
-            // Function to pick a random name
+            // Function to update the history list display
+            function updateHistoryList() {
+                // Clear the list
+                historyList.innerHTML = '';
+                
+                // Update count
+                historyCount.textContent = `(${pickHistory.length} ${pickHistory.length === 1 ? 'pick' : 'picks'})`;
+                
+                // If no history, show empty message
+                if (pickHistory.length === 0) {
+                    historyList.innerHTML = '<div class="history-empty">No picks yet. Click "Pick Random Name" to start!</div>';
+                    return;
+                }
+                
+                // Add each history item (show only last 10)
+                const recentHistory = pickHistory.slice(-10);
+                recentHistory.forEach(item => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    historyItem.textContent = item;
+                    historyList.appendChild(historyItem);
+                });
+            }
+            
+            // Function to pick a random name instantly
             function pickRandomName() {
                 if (names.length === 0) {
                     selectedName.textContent = "No names to pick from!";
@@ -482,50 +550,50 @@
                     selectedName.textContent = names[0];
                     selectedName.classList.add('highlight');
                     setTimeout(() => selectedName.classList.remove('highlight'), 800);
+                    
+                    // Add to history
+                    addToHistory(names[0]);
                     return;
                 }
                 
-                // Add spinning animation to button
-                const diceIcon = pickBtn.querySelector('i');
-                diceIcon.classList.add('spinning');
+                // Pick a random name instantly
+                const randomIndex = Math.floor(Math.random() * names.length);
+                selectedName.textContent = names[randomIndex];
                 
-                // Disable button during selection
-                pickBtn.disabled = true;
+                // Add highlight animation
+                selectedName.classList.add('highlight');
+                setTimeout(() => selectedName.classList.remove('highlight'), 800);
                 
-                // Simulate a random selection animation
-                let iterations = 0;
-                const maxIterations = 30;
-                const interval = setInterval(() => {
-                    // Pick a random name to show during animation
-                    const randomIndex = Math.floor(Math.random() * names.length);
-                    selectedName.textContent = names[randomIndex];
-                    
-                    iterations++;
-                    
-                    // End the animation
-                    if (iterations > maxIterations) {
-                        clearInterval(interval);
-                        
-                        // Final selection
-                        const finalIndex = Math.floor(Math.random() * names.length);
-                        selectedName.textContent = names[finalIndex];
-                        
-                        // Remove spinning animation
-                        diceIcon.classList.remove('spinning');
-                        
-                        // Re-enable button
-                        pickBtn.disabled = false;
-                        
-                        // Highlight the selected name
-                        selectedName.classList.add('highlight');
-                        setTimeout(() => selectedName.classList.remove('highlight'), 800);
-                    }
-                }, 50);
+                // Add to history
+                addToHistory(names[randomIndex]);
+            }
+            
+            // Function to add a picked name to history
+            function addToHistory(name) {
+                // Add timestamp to the name
+                const now = new Date();
+                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const historyEntry = `${name} (${timeString})`;
+                
+                pickHistory.push(historyEntry);
+                
+                // Keep only the last 50 entries
+                if (pickHistory.length > 50) {
+                    pickHistory = pickHistory.slice(-50);
+                }
+                
+                updateHistoryList();
+                saveHistory();
             }
             
             // Function to save names to localStorage
             function saveNames() {
                 localStorage.setItem('savedNames', JSON.stringify(names));
+            }
+            
+            // Function to save history to localStorage
+            function saveHistory() {
+                localStorage.setItem('pickHistory', JSON.stringify(pickHistory));
             }
             
             // Initialize with some example names if empty
